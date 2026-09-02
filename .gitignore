@@ -1,0 +1,25 @@
+# Environment Variables
+.env
+.env.local
+
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Temporary crops & artifacts
+temp_face_crop.jpg
+temp_*.jpg
+temp_*.png
+
+# Node / Hardhat
+node_modules/
+cache/
+artifacts/
+
+# IDE
+.vscode/
+.idea/
