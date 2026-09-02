@@ -162,8 +162,6 @@ def search_social_post(
         )
 
     try:
-        from serpapi import GoogleSearch
-
         # 1. Obtain public image URL for Google Lens
         image_url = _upload_temp_image(face_image_path)
         params: Dict[str, Any] = {
@@ -194,8 +192,15 @@ def search_social_post(
                     error_message="Could not establish public image URL for Google Lens upload."
                 )
 
-        search = GoogleSearch(params)
-        results = search.get_dict()
+        # Query SerpApi REST endpoint directly
+        resp = requests.get(
+            "https://serpapi.com/search.json",
+            params=params,
+            timeout=20
+        )
+        if resp.status_code != 200:
+            raise RuntimeError(f"SerpApi returned status {resp.status_code}: {resp.text}")
+        results = resp.json()
 
         # 2. Extract visual matches and organic results
         visual_matches = results.get("visual_matches", [])
