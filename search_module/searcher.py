@@ -111,6 +111,7 @@ def _upload_temp_image(image_path: str) -> Optional[str]:
 
 def search_social_post(
     face_image_path: str,
+    original_image_path: Optional[str] = None,
     api_key: Optional[str] = None,
     mock_fallback: bool = True
 ) -> SocialSearchResult:
@@ -120,6 +121,7 @@ def search_social_post(
 
     Args:
         face_image_path: Local path to the cropped face image.
+        original_image_path: Optional path to the original input image.
         api_key: SerpApi API key (defaults to SERPAPI_API_KEY environment variable).
         mock_fallback: If True and no API key is present or request fails, returns a realistic mock post.
 
@@ -131,7 +133,7 @@ def search_social_post(
     if not api_key or api_key.strip() == "" or api_key == "your_serpapi_key_here":
         if mock_fallback:
             # Deterministic demo fallback tailored to test samples
-            path_str = str(face_image_path).lower()
+            path_str = f"{str(face_image_path)} {str(original_image_path or '')}".lower()
             if "elon" in path_str:
                 return SocialSearchResult(
                     success=True,

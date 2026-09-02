@@ -100,7 +100,10 @@ def run_pipeline(
         transient=True,
     ) as progress:
         progress.add_task(description="Querying Google Lens and scanning social networks...", total=None)
-        search_result = search_social_post(face_image_path=face_result.crop_path)
+        search_result = search_social_post(
+            face_image_path=face_result.crop_path,
+            original_image_path=face_result.original_path
+        )
 
     if not search_result.success:
         console.print(f"[bold red]✖ Reverse Search Failed:[/bold red] {search_result.error_message}")
