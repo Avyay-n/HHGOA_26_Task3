@@ -1,20 +1,23 @@
-"""
-Smart Contract Deployment Script for PostRegistry.
-Compiles and deploys PostRegistry to Ethereum Sepolia or a local EVM node.
-Automatically updates .env with the deployed contract address.
-"""
-
 import os
+import sys
 from pathlib import Path
 from typing import Optional, Tuple
 from dotenv import load_dotenv, set_key
 from web3 import Web3
 from rich.console import Console
 
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from .constants import POST_REGISTRY_ABI, DEFAULT_SEPOLIA_RPCS, SEPOLIA_EXPLORER
 
 load_dotenv()
-console = Console()
+console = Console(force_terminal=True)
 
 # Precompiled EVM Bytecode for PostRegistry.sol (Solidity 0.8.20, optimizer enabled)
 POST_REGISTRY_BYTECODE = (

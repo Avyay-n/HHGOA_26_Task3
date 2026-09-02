@@ -185,6 +185,7 @@ class BlockchainVerifier:
             )
 
         try:
+            chain_id = self.w3.eth.chain_id
             nonce = self.w3.eth.get_transaction_count(self.account.address)
             gas_price = self.w3.eth.gas_price
 
@@ -195,22 +196,26 @@ class BlockchainVerifier:
             ).build_transaction({
                 "from": self.account.address,
                 "nonce": nonce,
-                "gasPrice": int(gas_price * 1.15),  # 15% buffer for fast confirmation
+                "chainId": chain_id,
+                "gasPrice": int(gas_price * 1.3),
             })
 
             # Estimate gas
             try:
                 estimated_gas = self.w3.eth.estimate_gas(tx_data)
-                tx_data["gas"] = int(estimated_gas * 1.2)
+                tx_data["gas"] = int(estimated_gas * 1.3)
             except Exception:
-                tx_data["gas"] = 150000
+                tx_data["gas"] = 160000
 
             # Sign transaction
             signed_tx = self.w3.eth.account.sign_transaction(tx_data, self.private_key)
+            raw_tx = getattr(signed_tx, "raw_transaction", None) or getattr(signed_tx, "rawTransaction")
 
             # Broadcast transaction
-            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-            tx_hash_hex = tx_hash.hex()
+            tx_hash = self.w3.eth.send_raw_transaction(raw_tx)
+            tx_hash_hex = tx_hash.hex() if hasattr(tx_hash, "hex") else Web3.to_hex(tx_hash)
+            if not tx_hash_hex.startswith("0x"):
+                tx_hash_hex = f"0x{tx_hash_hex}"
 
             # Wait for receipt
             receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)

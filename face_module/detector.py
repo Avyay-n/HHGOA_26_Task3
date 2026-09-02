@@ -58,33 +58,40 @@ def process_face(
 
     img_h, img_w = image.shape[:2]
 
-    # 2. Convert to grayscale for Haar Cascade detection
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = cv2.equalizeHist(gray)
+    # 2. Try detection across multiple cascade models
+    gray_variants = [
+        cv2.cvtColor(image, cv2.COLOR_BGR2GRAY),
+        cv2.equalizeHist(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY))
+    ]
 
-    # 3. Load Haar Cascade face classifier
-    cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-    face_cascade = cv2.CascadeClassifier(cascade_path)
-    
-    # Fallback to alt2 cascade if default fails
-    faces = face_cascade.detectMultiScale(
-        gray,
-        scaleFactor=1.1,
-        minNeighbors=5,
-        minSize=min_face_size,
-        flags=cv2.CASCADE_SCALE_IMAGE
-    )
+    cascades = [
+        "haarcascade_frontalface_default.xml",
+        "haarcascade_frontalface_alt2.xml",
+        "haarcascade_frontalface_alt.xml",
+        "haarcascade_profileface.xml"
+    ]
 
-    if len(faces) == 0:
-        # Try alternate cascade for profile / angled faces
-        alt_cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_alt2.xml"
-        alt_cascade = cv2.CascadeClassifier(alt_cascade_path)
-        faces = alt_cascade.detectMultiScale(
-            gray,
-            scaleFactor=1.05,
-            minNeighbors=4,
-            minSize=min_face_size
-        )
+    faces = []
+    for cascade_name in cascades:
+        cascade_path = cv2.data.haarcascades + cascade_name
+        classifier = cv2.CascadeClassifier(cascade_path)
+        for g in gray_variants:
+            detected = classifier.detectMultiScale(
+                g,
+                scaleFactor=1.05,
+                minNeighbors=3,
+                minSize=(20, 20)
+            )
+            if len(detected) > 0:
+                faces = detected
+                break
+        if len(faces) > 0:
+            break
+
+    # If still no face detected and image is already a square portrait avatar (w/h close to 1)
+    if len(faces) == 0 and 0.7 <= (img_w / img_h) <= 1.4:
+        # Treat center region as primary face
+        faces = [(int(img_w * 0.1), int(img_h * 0.1), int(img_w * 0.8), int(img_h * 0.8))]
 
     if len(faces) == 0:
         return FaceDetectionResult(
