@@ -5,8 +5,6 @@ Automated tests for Face Detection & Blockchain Verification Pipeline.
 import os
 import unittest
 from pathlib import Path
-from hexbytes import HexBytes
-
 from face_module.detector import process_face
 from search_module.searcher import search_social_post, _detect_platform, _extract_author
 from chain_module.verifier import hash_record, BlockchainVerifier
@@ -58,7 +56,8 @@ class TestPipeline(unittest.TestCase):
         hash1 = hash_record(dict1)
         hash2 = hash_record(dict2)
 
-        self.assertIsInstance(hash1, HexBytes)
+        self.assertIsInstance(hash1, bytes)
+        self.assertTrue(hasattr(hash1, "hex"))
         self.assertEqual(len(hash1), 32)
         self.assertEqual(hash1.hex(), hash2.hex())
 
