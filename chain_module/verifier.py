@@ -11,7 +11,6 @@ import os
 from typing import Optional, Dict, Any, Tuple
 from dotenv import load_dotenv
 from web3 import Web3
-from web3.exceptions import ContractLogicError
 from hexbytes import HexBytes
 
 from .constants import POST_REGISTRY_ABI, DEFAULT_SEPOLIA_RPCS, SEPOLIA_EXPLORER

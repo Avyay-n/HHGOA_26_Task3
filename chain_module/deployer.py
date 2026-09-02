@@ -46,38 +46,9 @@ POST_REGISTRY_BYTECODE = (
 
 def compile_solidity() -> Tuple[dict, str]:
     """
-    Attempts to compile PostRegistry.sol via solcx, falling back to precompiled bytecode.
+    Returns the PostRegistry smart contract ABI and bytecode.
     """
-    try:
-        from solcx import compile_standard, install_solc
-        install_solc("0.8.20")
-        contract_path = Path(__file__).parent.parent / "contracts" / "PostRegistry.sol"
-        
-        with open(contract_path, "r", encoding="utf-8") as f:
-            source = f.read()
-
-        compiled = compile_standard(
-            {
-                "language": "Solidity",
-                "sources": {"PostRegistry.sol": {"content": source}},
-                "settings": {
-                    "optimizer": {"enabled": True, "runs": 200},
-                    "outputSelection": {
-                        "*": {
-                            "*": ["abi", "evm.bytecode"]
-                        }
-                    }
-                }
-            },
-            solc_version="0.8.20"
-        )
-        contract_data = compiled["contracts"]["PostRegistry.sol"]["PostRegistry"]
-        abi = contract_data["abi"]
-        bytecode = contract_data["evm"]["bytecode"]["object"]
-        return abi, bytecode
-    except Exception:
-        # Seamless fallback to precompiled artifact
-        return POST_REGISTRY_ABI, POST_REGISTRY_BYTECODE
+    return POST_REGISTRY_ABI, POST_REGISTRY_BYTECODE
 
 
 def deploy_contract(
