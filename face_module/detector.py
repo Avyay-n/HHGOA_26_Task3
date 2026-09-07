@@ -127,7 +127,7 @@ def process_face(
         success=True,
         crop_path=str(out_path),
         original_path=str(path),
-        face_box=(int(x), int(y), int(w), int(h)),
+        face_box=(x, y, w, h),
         faces_detected_count=len(faces),
         confidence=0.95,
         error_message=None

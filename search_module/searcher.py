@@ -133,7 +133,7 @@ def search_social_post(
     if not api_key or api_key.strip() == "" or api_key == "your_serpapi_key_here":
         if mock_fallback:
             # Deterministic demo fallback tailored to test samples
-            path_str = f"{str(face_image_path)} {str(original_image_path or '')}".lower()
+            path_str = f"{face_image_path} {original_image_path or ''}".lower()
             if "elon" in path_str:
                 return SocialSearchResult(
                     success=True,
@@ -277,7 +277,7 @@ def search_social_post(
             )
 
         if mock_fallback:
-            path_str = f"{str(face_image_path)} {str(original_image_path or '')}".lower()
+            path_str = f"{face_image_path} {original_image_path or ''}".lower()
             if "elon" in path_str:
                 return SocialSearchResult(
                     success=True,
