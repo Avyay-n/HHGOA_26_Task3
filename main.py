@@ -89,7 +89,9 @@ def run_pipeline(
 
     console.print(f"[green]✓ Face detected successfully![/green]")
     console.print(f"  • [cyan]Faces Found:[/cyan] {face_result.faces_detected_count}")
-    console.print(f"  • [cyan]Bounding Box (x, y, w, h):[/cyan] {face_result.face_box}")
+    b = face_result.face_box
+    box_display = f"({b[0]}, {b[1]}, {b[2]}, {b[3]})" if b else "N/A"
+    console.print(f"  • [cyan]Bounding Box (x, y, w, h):[/cyan] {box_display}")
     console.print(f"  • [cyan]Applied Margin:[/cyan] {int(margin * 100)}%")
     console.print(f"  • [cyan]Face Crop Saved To:[/cyan] [bold]{face_result.crop_path}[/bold]")
 
