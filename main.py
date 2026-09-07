@@ -11,6 +11,7 @@ Flow:
 """
 
 import argparse
+import io
 import os
 import sys
 import time
@@ -27,8 +28,10 @@ from rich import box
 # Ensure UTF-8 output on Windows consoles
 if sys.platform == "win32":
     try:
-        sys.stdout.reconfigure(encoding="utf-8")
-        sys.stderr.reconfigure(encoding="utf-8")
+        if isinstance(sys.stdout, io.TextIOWrapper):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if isinstance(sys.stderr, io.TextIOWrapper):
+            sys.stderr.reconfigure(encoding="utf-8")
     except Exception:
         pass
 
@@ -193,6 +196,14 @@ def run_pipeline(
             console.print(f"  • [cyan]Block Number:[/cyan] {chain_record.block_number}")
         if chain_record.gas_used:
             console.print(f"  • [cyan]Gas Used:[/cyan] {chain_record.gas_used:,}")
+    elif chain_record.is_verified:
+        console.print(f"[green]✓ Record Already Confirmed On-Chain![/green]")
+        console.print(f"  • [cyan]Status:[/cyan] Pre-existing immutable entry detected in smart contract")
+        console.print(f"  • [cyan]Registered Timestamp:[/cyan] {chain_record.timestamp_readable} (UNIX: {chain_record.timestamp})")
+        if chain_record.contract_address:
+            console.print(f"  • [cyan]Smart Contract:[/cyan] {chain_record.contract_address}")
+    elif chain_record.error_message:
+        console.print(f"[yellow]⚠ Registration Notice: {chain_record.error_message}[/yellow]")
 
     # -------------------------------------------------------------
     # STEP 5: Verification Assertions
@@ -210,9 +221,10 @@ def run_pipeline(
         else:
             verification_status = chain_record
 
-    console.print(f"  • [cyan]On-Chain Status:[/cyan] [bold green]VERIFIED (TRUE)[/bold green]")
+    status_label = "[bold green]VERIFIED (TRUE)[/bold green]" if verification_status.is_verified else "[bold red]UNVERIFIED (FALSE)[/bold red]"
+    console.print(f"  • [cyan]On-Chain Status:[/cyan] {status_label}")
     console.print(f"  • [cyan]Registered Timestamp:[/cyan] {verification_status.timestamp_readable} (UNIX: {verification_status.timestamp})")
-    console.print(f"  • [cyan]Recorded Post URL:[/cyan] {verification_status.post_url}")
+    console.print(f"  • [cyan]Recorded Post URL:[/cyan] {verification_status.post_url if verification_status.post_url else 'N/A'}")
 
     # -------------------------------------------------------------
     # Pipeline Summary
@@ -238,15 +250,26 @@ def run_pipeline(
         f"keccak256: {hash_hex[:18]}...{hash_hex[-8:]}",
         "[bold green]PASS[/bold green]"
     )
+
+    if chain_record.tx_hash:
+        tx_detail = f"Tx: {chain_record.tx_hash[:16]}..."
+        tx_status = "[bold green]PASS[/bold green]"
+    elif chain_record.is_verified:
+        tx_detail = "Pre-existing Record On-Chain"
+        tx_status = "[bold green]PASS[/bold green]"
+    else:
+        tx_detail = "Registration Failed"
+        tx_status = "[bold red]FAIL[/bold red]"
+
     summary_table.add_row(
         "4. Blockchain Upload",
-        f"Network: {network_name} | Tx: {chain_record.tx_hash[:16]}...",
-        "[bold green]PASS[/bold green]"
+        f"Network: {network_name} | {tx_detail}",
+        tx_status
     )
     summary_table.add_row(
         "5. On-Chain Re-Verification",
-        f"Smart Contract verifyRecord -> TRUE ({verification_status.timestamp_readable})",
-        "[bold green]PASS[/bold green]"
+        f"Smart Contract verifyRecord -> {'TRUE' if verification_status.is_verified else 'FALSE'} ({verification_status.timestamp_readable})",
+        "[bold green]PASS[/bold green]" if verification_status.is_verified else "[bold red]FAIL[/bold red]"
     )
 
     console.print("\n")
