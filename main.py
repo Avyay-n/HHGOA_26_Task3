@@ -83,8 +83,8 @@ def run_pipeline(
             output_path=crop_output
         )
 
-    if not face_result.success:
-        console.print(f"[bold red]✖ Face Detection Failed:[/bold red] {face_result.error_message}")
+    if not face_result.success or not face_result.crop_path:
+        console.print(f"[bold red]✖ Face Detection Failed:[/bold red] {face_result.error_message or 'Crop generation failed.'}")
         sys.exit(1)
 
     console.print(f"[green]✓ Face detected successfully![/green]")

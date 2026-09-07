@@ -21,8 +21,10 @@ class TestPipeline(unittest.TestCase):
         result = process_face(img_path, margin_percent=0.15, output_path="temp_test_crop.jpg")
         self.assertTrue(result.success, f"Face detection failed: {result.error_message}")
         self.assertIsNotNone(result.crop_path)
+        assert result.crop_path is not None
         self.assertTrue(os.path.exists(result.crop_path))
         self.assertGreater(result.faces_detected_count, 0)
+        assert result.face_box is not None
         self.assertEqual(len(result.face_box), 4)
 
     def test_02_face_detection_elon(self):
@@ -33,6 +35,7 @@ class TestPipeline(unittest.TestCase):
 
         result = process_face(img_path, margin_percent=0.15, output_path="temp_test_crop_elon.jpg")
         self.assertTrue(result.success, f"Face detection failed: {result.error_message}")
+        assert result.crop_path is not None
         self.assertTrue(os.path.exists(result.crop_path))
 
     def test_03_platform_detection(self):

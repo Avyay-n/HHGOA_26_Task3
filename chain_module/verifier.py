@@ -189,15 +189,16 @@ class BlockchainVerifier:
             gas_price = self.w3.eth.gas_price
 
             # Build transaction
-            tx_data = self.contract.functions.registerRecord(
-                post_url,
-                content_hash
-            ).build_transaction({
+            tx_params: Any = {
                 "from": self.account.address,
                 "nonce": nonce,
                 "chainId": chain_id,
                 "gasPrice": int(gas_price * 1.3),
-            })
+            }
+            tx_data = self.contract.functions.registerRecord(
+                post_url,
+                content_hash
+            ).build_transaction(tx_params)
 
             # Estimate gas
             try:
@@ -225,6 +226,9 @@ class BlockchainVerifier:
 
             explorer_url = f"{SEPOLIA_EXPLORER}/tx/{tx_hash_hex}"
 
+            block_num = receipt["blockNumber"] if "blockNumber" in receipt else getattr(receipt, "blockNumber", None)
+            gas_val = receipt["gasUsed"] if "gasUsed" in receipt else getattr(receipt, "gasUsed", None)
+
             return OnChainRecord(
                 is_verified=is_verified,
                 content_hash_hex=hash_hex,
@@ -233,8 +237,8 @@ class BlockchainVerifier:
                 timestamp_readable=time_str,
                 tx_hash=tx_hash_hex,
                 explorer_url=explorer_url,
-                block_number=receipt.blockNumber,
-                gas_used=receipt.gasUsed,
+                block_number=int(block_num) if block_num is not None else None,
+                gas_used=int(gas_val) if gas_val is not None else None,
                 contract_address=self.contract_address
             )
 

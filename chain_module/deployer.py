@@ -2,7 +2,7 @@ import io
 import os
 import sys
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any, List, Dict
 from dotenv import load_dotenv, set_key
 from web3 import Web3
 from rich.console import Console
@@ -47,7 +47,7 @@ POST_REGISTRY_BYTECODE = (
 )
 
 
-def compile_solidity() -> Tuple[dict, str]:
+def compile_solidity() -> Tuple[List[Dict[str, Any]], str]:
     """
     Returns the PostRegistry smart contract ABI and bytecode.
     """
@@ -125,7 +125,11 @@ def deploy_contract(
     console.print(f"[dim]Tx Hash: {tx_hash.hex()}[/dim]")
 
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=180)
-    contract_address = receipt.contractAddress
+    contract_address = str(receipt["contractAddress"]) if receipt.get("contractAddress") else None
+
+    if not contract_address:
+        console.print("[red]Deployment failed: contract address not found in transaction receipt.[/red]")
+        return None
 
     console.print(f"[green]✓ Contract Deployed Successfully at:[/green] [bold cyan]{contract_address}[/bold cyan]")
     console.print(f"[dim]Explorer: {SEPOLIA_EXPLORER}/address/{contract_address}[/dim]")

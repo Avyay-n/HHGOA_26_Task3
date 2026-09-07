@@ -71,9 +71,12 @@ def process_face(
         "haarcascade_profileface.xml"
     ]
 
+    haarcascades_dir = getattr(cv2, "data", None)
+    haarcascades_path = getattr(haarcascades_dir, "haarcascades", "") if haarcascades_dir else ""
+
     faces = []
     for cascade_name in cascades:
-        cascade_path = cv2.data.haarcascades + cascade_name
+        cascade_path = str(Path(haarcascades_path) / cascade_name)
         classifier = cv2.CascadeClassifier(cascade_path)
         for g in gray_variants:
             detected = classifier.detectMultiScale(
